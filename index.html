@@ -1,109 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earn Mani Ads System</title>
+    <title>Earn Mani - Ad System</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://adsgram.ai/sdk/v1/adsgram.js"></script>
     
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
+            font-family: 'Arial', sans-serif;
+            background: #0f172a;
             color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            text-align: center;
+            padding: 20px;
             margin: 0;
         }
-        .container {
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
+        .coin-box {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #3b82f6;
         }
-        .ad-button {
+        #coin-count {
+            font-size: 30px;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        .btn {
             width: 100%;
+            max-width: 300px;
             padding: 15px;
             margin: 10px 0;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
+            color: white;
+            transition: 0.3s;
         }
-        .ad-button:active { transform: scale(0.95); }
-        
-        /* বাটন কালার */
-        .btn-banner { background: #3498db; }
-        .btn-inter { background: #9b59b6; }
-        .btn-reward { background: #2ecc71; }
-        .btn-task { background: #f1c40f; color: #000; }
-
-        #status {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #bbb;
-        }
+        .btn-reward { background: #10b981; } /* Green */
+        .btn-inter { background: #3b82f6; }  /* Blue */
+        .btn-banner { background: #8b5cf6; } /* Purple */
+        .btn:active { transform: scale(0.98); }
+        .status { font-size: 12px; color: #94a3b8; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Earn Mani Ad Center</h2>
-    <p>প্রতিটি বাটন আলাদা ভাবে কাজ করবে</p>
+    <div class="coin-box">
+        <div>আপনার ব্যালেন্স</div>
+        <div id="coin-count">0</div>
+        <div style="font-size: 12px;">Coins</div>
+    </div>
 
-    <button class="ad-button btn-banner" onclick="showAd('29531')">Show Banner Ad</button>
+    <h3>অ্যাড দেখে ইনকাম করুন</h3>
 
-    <button class="ad-button btn-inter" onclick="showAd('29533')">Show Interstitial Ad</button>
+    <button class="btn btn-reward" onclick="runAd('29532', 'reward')">Watch Video (Big Reward)</button>
+    <button class="btn btn-inter" onclick="runAd('29533', 'inter')">Show Interstitial Ad</button>
+    <button class="btn btn-banner" onclick="runAd('29531', 'banner')">Show Banner Ad</button>
 
-    <button class="ad-button btn-reward" onclick="showAd('29532')">Watch Video (Get Reward)</button>
+    <p id="msg-status" class="status">সিস্টেম রেডি...</p>
 
-    <button class="ad-button btn-task" onclick="showAd('29533')">Complete Task Ad</button>
+    <script>
+        // ১. টেলিগ্রাম এবং লোকাল স্টোরেজ সেটআপ
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
 
-    <div id="status">Status: Waiting for action...</div>
-</div>
+        let coins = parseInt(localStorage.getItem('user_coins')) || 0;
+        document.getElementById('coin-count').innerText = coins;
 
-<script>
-    const WebApp = window.Telegram.WebApp;
-    WebApp.ready();
-    WebApp.expand();
+        // ২. মেইন অ্যাড ফাংশন
+        async function runAd(blockId, type) {
+            const statusText = document.getElementById('msg-status');
+            statusText.innerText = "অ্যাড লোড হচ্ছে... দয়া করে অপেক্ষা করুন।";
+            statusText.style.color = "#f59e0b";
 
-    function showAd(blockId) {
-        const statusDiv = document.getElementById('status');
-        statusDiv.innerText = "Ad Loading...";
+            // Adsgram Initialize
+            const AdController = window.Adsgram.init({
+                blockId: blockId,
+                debug: false // এখানে true দিলে এরর ডিটেইলস দেখা যায়
+            });
 
-        // Adsgram Initialize with specific Block ID
-        const AdController = window.Adsgram.init({
-            blockId: blockId,
-            debug: false 
-        });
+            try {
+                const result = await AdController.show();
+                
+                // অ্যাড দেখা সফল হলে
+                console.log(result);
+                statusText.innerText = "অ্যাড সফলভাবে দেখা হয়েছে!";
+                statusText.style.color = "#10b981";
 
-        AdController.show().then((result) => {
-            // অ্যাড সফলভাবে দেখা শেষ হলে
-            statusDiv.innerText = "Success: Ad finished!";
-            statusDiv.style.color = "#2ecc71";
-            WebApp.HapticFeedback.notificationOccurred('success');
-            
-            // এখানে ইউজারকে রিওয়ার্ড দেওয়ার লজিক লিখতে পারেন
-            if(blockId === '29532') {
-                alert("You earned 100 coins!");
+                // রিওয়ার্ড লজিক
+                let earned = 0;
+                if(type === 'reward') earned = 100;
+                else if(type === 'inter') earned = 20;
+                else earned = 5;
+
+                coins += earned;
+                localStorage.setItem('user_coins', coins);
+                document.getElementById('coin-count').innerText = coins;
+                
+                tg.HapticFeedback.notificationOccurred('success');
+                alert("অভিনন্দন! আপনি " + earned + " কয়েন পেয়েছেন।");
+
+            } catch (error) {
+                // অ্যাড লোড না হলে
+                console.error(error);
+                statusText.style.color = "#ef4444";
+                
+                if (error.error === "not_found") {
+                    statusText.innerText = "এই মুহূর্তে কোনো অ্যাড নেই (No Fill)।";
+                } else if (error.error === "closedByUser") {
+                    statusText.innerText = "আপনি অ্যাডটি পুরো দেখেননি!";
+                } else {
+                    statusText.innerText = "অ্যাড লোড হতে সমস্যা হয়েছে (Error 1221)।";
+                }
             }
-        }).catch((error) => {
-            // অ্যাড লোড না হলে বা ইউজার কেটে দিলে
-            console.error(error);
-            statusDiv.innerText = "Error: " + (error.error || "Ad not filled");
-            statusDiv.style.color = "#e74c3c";
-            
-            if(error.error === "not_found") {
-                alert("এই মুহূর্তে কোনো অ্যাড নেই। কিছুক্ষণ পর চেষ্টা করুন।");
-            }
-        });
-    }
-</script>
-
+        }
+    </script>
 </body>
 </html>
