@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earn Mani - Ad System</title>
+    <title>Earn Mani - Fixed Ads</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://adsgram.ai/sdk/v1/adsgram.js"></script>
     
@@ -14,109 +14,108 @@
             color: white;
             text-align: center;
             padding: 20px;
-            margin: 0;
         }
-        .coin-box {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border: 2px solid #3b82f6;
+        .balance-card {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #3b82f6;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         #coin-count {
-            font-size: 30px;
-            color: #f59e0b;
+            font-size: 35px;
+            color: #fbbf24;
             font-weight: bold;
+            display: block;
         }
-        .btn {
+        .ad-btn {
             width: 100%;
-            max-width: 300px;
-            padding: 15px;
-            margin: 10px 0;
+            max-width: 320px;
+            padding: 16px;
+            margin: 12px 0;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             color: white;
-            transition: 0.3s;
+            transition: all 0.2s;
         }
-        .btn-reward { background: #10b981; } /* Green */
-        .btn-inter { background: #3b82f6; }  /* Blue */
-        .btn-banner { background: #8b5cf6; } /* Purple */
-        .btn:active { transform: scale(0.98); }
-        .status { font-size: 12px; color: #94a3b8; margin-top: 10px; }
+        .btn-video { background: #059669; } /* Rewarded */
+        .btn-inter { background: #2563eb; } /* Interstitial */
+        .ad-btn:active { transform: scale(0.96); }
+        .status-msg { font-size: 13px; color: #94a3b8; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-    <div class="coin-box">
-        <div>আপনার ব্যালেন্স</div>
-        <div id="coin-count">0</div>
-        <div style="font-size: 12px;">Coins</div>
+    <div class="balance-card">
+        <span>আপনার বর্তমান ব্যালেন্স</span>
+        <span id="coin-count">0</span>
+        <small>Coins</small>
     </div>
 
-    <h3>অ্যাড দেখে ইনকাম করুন</h3>
+    <h3>অ্যাড দেখে ইনকাম শুরু করুন</h3>
 
-    <button class="btn btn-reward" onclick="runAd('29532', 'reward')">Watch Video (Big Reward)</button>
-    <button class="btn btn-inter" onclick="runAd('29533', 'inter')">Show Interstitial Ad</button>
-    <button class="btn btn-banner" onclick="runAd('29531', 'banner')">Show Banner Ad</button>
+    <button class="ad-btn btn-video" onclick="showAdsgram('29577', 'reward')">
+        🎥 Watch Video (Big Reward)
+    </button>
 
-    <p id="msg-status" class="status">সিস্টেম রেডি...</p>
+    <button class="ad-btn btn-inter" onclick="showAdsgram('29578', 'inter')">
+        🖼️ Show Interstitial Ad
+    </button>
+
+    <p id="status" class="status-msg">সিস্টেম প্রস্তুত...</p>
 
     <script>
-        // ১. টেলিগ্রাম এবং লোকাল স্টোরেজ সেটআপ
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        let coins = parseInt(localStorage.getItem('user_coins')) || 0;
-        document.getElementById('coin-count').innerText = coins;
+        // লোকাল স্টোরেজ থেকে কয়েন লোড
+        let balance = parseInt(localStorage.getItem('user_balance')) || 0;
+        document.getElementById('coin-count').innerText = balance;
 
-        // ২. মেইন অ্যাড ফাংশন
-        async function runAd(blockId, type) {
-            const statusText = document.getElementById('msg-status');
-            statusText.innerText = "অ্যাড লোড হচ্ছে... দয়া করে অপেক্ষা করুন।";
-            statusText.style.color = "#f59e0b";
+        async function showAdsgram(blockId, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerText = "অ্যাড লোড হচ্ছে...";
+            statusEl.style.color = "#fbbf24";
 
-            // Adsgram Initialize
+            // Adsgram Initializer
             const AdController = window.Adsgram.init({
                 blockId: blockId,
-                debug: false // এখানে true দিলে এরর ডিটেইলস দেখা যায়
+                debug: false // অ্যাড শো না হলে এখানে true করে এরর দেখতে পারেন
             });
 
             try {
                 const result = await AdController.show();
                 
-                // অ্যাড দেখা সফল হলে
-                console.log(result);
-                statusText.innerText = "অ্যাড সফলভাবে দেখা হয়েছে!";
-                statusText.style.color = "#10b981";
+                // অ্যাড সফলভাবে দেখা শেষ হলে
+                statusEl.innerText = "অ্যাড সফল! রিওয়ার্ড যোগ করা হয়েছে।";
+                statusEl.style.color = "#10b981";
 
-                // রিওয়ার্ড লজিক
-                let earned = 0;
-                if(type === 'reward') earned = 100;
-                else if(type === 'inter') earned = 20;
-                else earned = 5;
-
-                coins += earned;
-                localStorage.setItem('user_coins', coins);
-                document.getElementById('coin-count').innerText = coins;
+                let reward = (type === 'reward') ? 100 : 20;
+                balance += reward;
                 
+                // লোকাল স্টোরেজে সেভ
+                localStorage.setItem('user_balance', balance);
+                document.getElementById('coin-count').innerText = balance;
+
                 tg.HapticFeedback.notificationOccurred('success');
-                alert("অভিনন্দন! আপনি " + earned + " কয়েন পেয়েছেন।");
+                alert("অভিনন্দন! আপনি " + reward + " কয়েন পেয়েছেন।");
 
             } catch (error) {
-                // অ্যাড লোড না হলে
+                // এরর হ্যান্ডেলিং
                 console.error(error);
-                statusText.style.color = "#ef4444";
-                
+                statusEl.style.color = "#ef4444";
+
                 if (error.error === "not_found") {
-                    statusText.innerText = "এই মুহূর্তে কোনো অ্যাড নেই (No Fill)।";
+                    statusEl.innerText = "দুঃখিত, এই মুহূর্তে কোনো অ্যাড নেই।";
                 } else if (error.error === "closedByUser") {
-                    statusText.innerText = "আপনি অ্যাডটি পুরো দেখেননি!";
+                    statusEl.innerText = "অ্যাডটি সম্পূর্ণ না দেখলে রিওয়ার্ড পাবেন না।";
                 } else {
-                    statusText.innerText = "অ্যাড লোড হতে সমস্যা হয়েছে (Error 1221)।";
+                    statusEl.innerText = "অ্যাড লোড হতে সমস্যা হচ্ছে। ডোমেইন চেক করুন।";
                 }
             }
         }
