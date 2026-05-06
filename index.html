@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earn Mani Ads System</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://adsgram.ai/sdk/v1/adsgram.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .ad-button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .ad-button:active { transform: scale(0.95); }
+        
+        /* বাটন কালার */
+        .btn-banner { background: #3498db; }
+        .btn-inter { background: #9b59b6; }
+        .btn-reward { background: #2ecc71; }
+        .btn-task { background: #f1c40f; color: #000; }
+
+        #status {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Earn Mani Ad Center</h2>
+    <p>প্রতিটি বাটন আলাদা ভাবে কাজ করবে</p>
+
+    <button class="ad-button btn-banner" onclick="showAd('29531')">Show Banner Ad</button>
+
+    <button class="ad-button btn-inter" onclick="showAd('29533')">Show Interstitial Ad</button>
+
+    <button class="ad-button btn-reward" onclick="showAd('29532')">Watch Video (Get Reward)</button>
+
+    <button class="ad-button btn-task" onclick="showAd('29533')">Complete Task Ad</button>
+
+    <div id="status">Status: Waiting for action...</div>
+</div>
+
+<script>
+    const WebApp = window.Telegram.WebApp;
+    WebApp.ready();
+    WebApp.expand();
+
+    function showAd(blockId) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.innerText = "Ad Loading...";
+
+        // Adsgram Initialize with specific Block ID
+        const AdController = window.Adsgram.init({
+            blockId: blockId,
+            debug: false 
+        });
+
+        AdController.show().then((result) => {
+            // অ্যাড সফলভাবে দেখা শেষ হলে
+            statusDiv.innerText = "Success: Ad finished!";
+            statusDiv.style.color = "#2ecc71";
+            WebApp.HapticFeedback.notificationOccurred('success');
+            
+            // এখানে ইউজারকে রিওয়ার্ড দেওয়ার লজিক লিখতে পারেন
+            if(blockId === '29532') {
+                alert("You earned 100 coins!");
+            }
+        }).catch((error) => {
+            // অ্যাড লোড না হলে বা ইউজার কেটে দিলে
+            console.error(error);
+            statusDiv.innerText = "Error: " + (error.error || "Ad not filled");
+            statusDiv.style.color = "#e74c3c";
+            
+            if(error.error === "not_found") {
+                alert("এই মুহূর্তে কোনো অ্যাড নেই। কিছুক্ষণ পর চেষ্টা করুন।");
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
